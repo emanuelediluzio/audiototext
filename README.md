@@ -13,7 +13,6 @@ Per utilizzare questo progetto, è necessario installare alcune dipendenze. Assi
 
 Puoi installare le dipendenze necessarie con il seguente comando:
 
-```bash
 pip install transformers librosa pydub
 Nota: ffmpeg deve essere installato separatamente. Puoi trovare le istruzioni per l'installazione su FFmpeg.org.
 
