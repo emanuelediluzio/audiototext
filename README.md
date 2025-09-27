@@ -1,35 +1,32 @@
-Script Python per convertire un file audio lungo (es. 53 minuti) in testo e sottotitoli SRT, con barra di avanzamento percentuale.
-Funziona bene su Mac con chip Apple Silicon (M1/M2/M3) utilizzando faster-whisper (consigliato) oppure openai-whisper.
+# audio-to-text (Mac M1)
 
-Caratteristiche
+Script Python per convertire un file audio lungo (es. 53 minuti) in **testo** e **sottotitoli SRT**, con **barra di avanzamento percentuale**.
+Funziona bene su Mac con chip **Apple Silicon (M1/M2/M3)** utilizzando **faster-whisper** (consigliato) oppure **openai-whisper**.
 
-Supporto a formati comuni (.m4a, .mp3, .wav, ecc.)
+## Caratteristiche
 
-Chunking automatico (audio diviso in parti per robustezza)
+* Supporto a formati comuni (`.m4a`, `.mp3`, `.wav`, ecc.)
+* **Chunking** automatico (audio diviso in parti per robustezza)
+* **Barra di avanzamento** con percentuale (`tqdm`)
+* Output:
 
-Barra di avanzamento con percentuale (tqdm)
+  * `NOMEFILE.trascrizione.txt`
+  * `NOMEFILE.trascrizione.srt` (sottotitoli con timestamp)
+* Opzioni per **lingua**, **modello**, **durata chunk**
 
-Output:
+---
 
-NOMEFILE.trascrizione.txt
+## Requisiti
 
-NOMEFILE.trascrizione.srt (sottotitoli con timestamp)
+* **macOS** con chip Apple Silicon
+* **Conda** o **Miniconda**
+* **Homebrew** (per installare ffmpeg)
+* **FFmpeg**
+* Python 3.10/3.11
 
-Opzioni per lingua, modello, durata chunk
+### Installazione rapida
 
-Requisiti
-
-macOS con chip Apple Silicon
-
-Conda o Miniconda
-
-Homebrew (per installare ffmpeg)
-
-FFmpeg
-
-Python 3.10/3.11
-
-Installazione rapida
+```bash
 # 1) Crea ambiente dedicato
 conda create -n audio2txt python=3.11 -y
 conda activate audio2txt
@@ -42,144 +39,163 @@ python -m pip install --upgrade pip
 python -m pip install pydub tqdm faster-whisper
 # In alternativa a faster-whisper:
 # python -m pip install openai-whisper
+```
 
+> **Perché environment dedicato?** Evita conflitti con PyTorch/torch/whisper o librerie di sistema (errore tipo `libtorch_cpu.dylib not found`).
 
-Perché environment dedicato? Evita conflitti con PyTorch/torch/whisper o librerie di sistema (errore tipo libtorch_cpu.dylib not found).
+---
 
-File di esempio
+## File di esempio
 
 Audio:
-/Users/emanuelediluzio/Desktop/4_5960890835586258972.m4a
+`/Users/emanuelediluzio/Desktop/4_5960890835586258972.m4a`
 
 Script:
-/Users/emanuelediluzio/Desktop/audio_to_txt.py
+`/Users/emanuelediluzio/Desktop/audio_to_txt.py`
 
-Esecuzione
+---
+
+## Esecuzione
+
+```bash
 conda activate audio2txt
 python /Users/emanuelediluzio/Desktop/audio_to_txt.py \
   --audio "/Users/emanuelediluzio/Desktop/4_5960890835586258972.m4a" \
   --lang it \
   --model medium \
   --chunk_sec 150
+```
 
+**Parametri principali:**
 
-Parametri principali:
+* `--audio` (obbligatorio): percorso del file audio.
+* `--lang` (opzionale): lingua forzata (es. `it`, `en`).
+* `--model` (opzionale): modello Whisper.
 
---audio (obbligatorio): percorso del file audio.
-
---lang (opzionale): lingua forzata (es. it, en).
-
---model (opzionale): modello Whisper.
-
-faster-whisper: tiny, base, small, medium, large-v3 (più grande = più accurato ma più lento).
-
-openai-whisper: tiny, base, small, medium, large-v3.
-
---chunk_sec (opzionale): durata chunk in secondi (default 120–180 è un buon compromesso).
+  * `faster-whisper`: `tiny`, `base`, `small`, `medium`, `large-v3` (più grande = più accurato ma più lento).
+  * `openai-whisper`: `tiny`, `base`, `small`, `medium`, `large-v3`.
+* `--chunk_sec` (opzionale): durata chunk in secondi (default 120–180 è un buon compromesso).
 
 Output generati accanto al file audio:
 
-4_5960890835586258972.trascrizione.txt
+* `4_5960890835586258972.trascrizione.txt`
+* `4_5960890835586258972.trascrizione.srt`
 
-4_5960890835586258972.trascrizione.srt
+---
 
-Nota sui backend
+## Nota sui backend
 
-Per impostazione predefinita lo script usa faster-whisper.
-Per passare a openai-whisper:
+Per impostazione predefinita lo script usa **faster-whisper**.
+Per passare a **openai-whisper**:
 
-Apri lo script e imposta:
+1. Apri lo script e imposta:
 
-USE_FASTER_WHISPER = False
+   ```python
+   USE_FASTER_WHISPER = False
+   ```
+2. Installa:
 
+   ```bash
+   python -m pip install openai-whisper
+   ```
 
-Installa:
+**Consiglio**: su M1, `faster-whisper` con `compute_type="int8"` è spesso il miglior rapporto **velocità/accuratezza**.
 
-python -m pip install openai-whisper
+---
 
+## Struttura dello script
 
-Consiglio: su M1, faster-whisper con compute_type="int8" è spesso il miglior rapporto velocità/accuratezza.
+* Carica l’audio con **pydub**
+* Spezza in chunk da `--chunk_sec` secondi
+* Trascrive ogni chunk
+* Mostra barra di avanzamento (`tqdm`) in base alla durata totale
+* Scrive:
 
-Struttura dello script
+  * testo completo (`.txt`)
+  * sottotitoli con timestamp (`.srt`)
 
-Carica l’audio con pydub
+---
 
-Spezza in chunk da --chunk_sec secondi
+## Troubleshooting
 
-Trascrive ogni chunk
-
-Mostra barra di avanzamento (tqdm) in base alla durata totale
-
-Scrive:
-
-testo completo (.txt)
-
-sottotitoli con timestamp (.srt)
-
-Troubleshooting
-ModuleNotFoundError: No module named 'faster_whisper'
+### `ModuleNotFoundError: No module named 'faster_whisper'`
 
 Installa nel giusto environment:
 
+```bash
 conda activate audio2txt
 python -m pip install faster-whisper
+```
 
-ffmpeg not found
+### `ffmpeg not found`
 
 Installa ffmpeg:
 
+```bash
 brew install ffmpeg
+```
 
+Se ancora non va, aggiungi il path di ffmpeg al tuo `$PATH` o riavvia il terminale.
 
-Se ancora non va, aggiungi il path di ffmpeg al tuo $PATH o riavvia il terminale.
+### Lento / CPU alta
 
-Lento / CPU alta
+* Usa un modello più piccolo (`--model small` o `base`)
+* Aumenta `--chunk_sec` (es. 180–240) per meno file temporanei
+* Chiudi app pesanti in background
 
-Usa un modello più piccolo (--model small o base)
+### Errori di permessi sul file audio
 
-Aumenta --chunk_sec (es. 180–240) per meno file temporanei
+* Verifica il path e che il file sia leggibile
+* Evita caratteri speciali non ASCII nei path (se possibile)
 
-Chiudi app pesanti in background
+### Output con punteggiatura scarsa
 
-Errori di permessi sul file audio
+* Prova `--model large-v3` (più accurato)
+* Assicurati di passare `--lang it` per l’italiano
 
-Verifica il path e che il file sia leggibile
+---
 
-Evita caratteri speciali non ASCII nei path (se possibile)
+## Esempi
 
-Output con punteggiatura scarsa
+### Trascrizione veloce (italiano, modello medio)
 
-Prova --model large-v3 (più accurato)
-
-Assicurati di passare --lang it per l’italiano
-
-Esempi
-Trascrizione veloce (italiano, modello medio)
+```bash
 python audio_to_txt.py \
   --audio "/Users/emanuelediluzio/Desktop/4_5960890835586258972.m4a" \
   --lang it --model medium --chunk_sec 150
+```
 
-Massima qualità (lento)
+### Massima qualità (lento)
+
+```bash
 python audio_to_txt.py \
   --audio "/Users/emanuelediluzio/Desktop/4_5960890835586258972.m4a" \
   --lang it --model large-v3 --chunk_sec 180
+```
 
-Inglese, chunk più corti
+### Inglese, chunk più corti
+
+```bash
 python audio_to_txt.py \
   --audio "/path/to/file.mp3" \
   --lang en --model small --chunk_sec 90
+```
 
-FAQ
+---
 
-Posso usare Qwen3-Omni-30B-A3B-Captioner?
-Non in locale su M1 in modo pratico: è un 30B pensato per GPU grandi e accetta solo ~30s per inferenza. Per trascrizione ASR la scelta più semplice/robusta è Whisper.
+## FAQ
 
-Dove trovo i file di output?
-Nella stessa cartella del file audio, con suffissi .trascrizione.txt e .trascrizione.srt.
+**Posso usare Qwen3-Omni-30B-A3B-Captioner?**
+Non in locale su M1 in modo pratico: è un 30B pensato per GPU grandi e accetta solo ~30s per inferenza. Per **trascrizione ASR** la scelta più semplice/robusta è Whisper.
 
-Supporta file lunghi (>1h)?
+**Dove trovo i file di output?**
+Nella stessa cartella del file audio, con suffissi `.trascrizione.txt` e `.trascrizione.srt`.
+
+**Supporta file lunghi (>1h)?**
 Sì, il chunking li gestisce senza problemi (dipende da spazio e tempo di calcolo).
 
-Licenza
+---
 
-Questo repository è distribuito con licenza MIT
+## Licenza
+
+Questo repository è distribuito con licenza **MIT**
