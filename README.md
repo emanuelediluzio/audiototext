@@ -1,5 +1,3 @@
-audio-to-text (Mac M1)
-
 Script Python per convertire un file audio lungo (es. 53 minuti) in testo e sottotitoli SRT, con barra di avanzamento percentuale.
 Funziona bene su Mac con chip Apple Silicon (M1/M2/M3) utilizzando faster-whisper (consigliato) oppure openai-whisper.
 
